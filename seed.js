@@ -45,7 +45,21 @@ const seed = async () => {
         updatedAt: new Date(),
     };
 
-    await db.collection('users').insertOne(userDto);
+    const createdUser = await db.collection('users').insertOne(userDto);
+
+    console.log(createdUser.insertedId);
+
+    const appointmentDto = {
+        end: new Date('2023-02-01T11:00:00'),
+        start: new Date('2023-02-01T10:00:00'),
+        subject: 'Test',
+        location: 'Secrétariat',
+        participants: [createdUser.insertedId],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+    };
+
+    await db.collection('appointments').insertOne(appointmentDto);
 };
 
 seed();
