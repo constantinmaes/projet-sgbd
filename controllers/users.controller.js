@@ -2,6 +2,7 @@ const dbClient = require('../utils/').dbClient;
 const database = dbClient.db(process.env.MONGO_DB_DATABASE);
 const collection = database.collection('users');
 const bcrypt = require('bcrypt');
+const Joi = require('joi');
 
 exports.findAll = async (req, res) => {
     const data = await collection.find({}).toArray();
@@ -24,9 +25,20 @@ exports.findOne = async (req, res) => {
     res.status(200).json(data);
 };
 exports.create = async (req, res) => {
+    const schema = Joi.object({
+        email: Joi.string().email().required(),
+        password: Joi.string().min(8).required(),
+    });
+
     const { body } = req;
 
-    const { password, ...rest } = body;
+    const { value, error } = schema.validate(body);
+
+    if (error) {
+        return res.status(400).json({ message: error });
+    }
+
+    const { password, ...rest } = value;
 
     const hash = await bcrypt.hash(password, 10);
 
