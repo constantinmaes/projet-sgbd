@@ -26,40 +26,95 @@ const seed = async () => {
     // DTO = DATA TRANSFER OBJECT
     const hash = await require('bcrypt').hash('1234', 10);
 
-    const userDto = {
-        name: {
-            first: 'Saul',
-            middle: 'M.',
-            last: 'Goodman',
+    const userDtos = [
+        {
+            name: {
+                first: 'Saul',
+                middle: 'M.',
+                last: 'Goodman',
+            },
+            email: 'saul.goodman@gmail.com',
+            address: {
+                street: 'Place de la Justice',
+                nbr: 1,
+                postCode: 7700,
+                city: 'Mouscron',
+                country: 'Belgium',
+            },
+            password: hash,
+            createdAt: new Date(),
+            updatedAt: new Date(),
         },
-        email: 'saul.goodman@gmail.com',
-        address: {
-            street: 'Place de la Justice',
-            nbr: 1,
-            postCode: 7700,
-            city: 'Mouscron',
-            country: 'Belgium',
+        {
+            name: {
+                first: 'Walter',
+                middle: 'H.',
+                last: 'White',
+            },
+            email: 'walter.white@gmail.com',
+            address: {
+                street: 'Place de la Justice',
+                nbr: 1,
+                postCode: 7700,
+                city: 'Mouscron',
+                country: 'Belgium',
+            },
+            password: hash,
+            createdAt: new Date(),
+            updatedAt: new Date(),
         },
-        password: hash,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    };
+        {
+            name: {
+                first: 'Gus',
+                middle: 'M.',
+                last: 'Fring',
+            },
+            email: 'gustavo.fring@gmail.com',
+            address: {
+                street: 'Place de la Justice',
+                nbr: 1,
+                postCode: 7700,
+                city: 'Mouscron',
+                country: 'Belgium',
+            },
+            password: hash,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        },
+    ];
 
-    const createdUser = await db.collection('users').insertOne(userDto);
+    const createdUsers = await Promise.all(
+        userDtos.map((u) => db.collection('users').insertOne(u))
+    );
 
-    console.log(createdUser.insertedId);
+    const appointmentDtos = [
+        {
+            end: new Date('2023-02-01T11:00:00'),
+            start: new Date('2023-02-01T10:00:00'),
+            subject: 'Test',
+            location: 'Secrétariat',
+            participants: [
+                createdUsers[0].insertedId,
+                createdUsers[1].insertedId,
+            ],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        },
+        {
+            end: new Date('2023-02-12T10:00:00'),
+            start: new Date('2023-02-12T09:00:00'),
+            subject: 'Inscription',
+            location: 'Local 128',
+            participants: [
+                createdUsers[1].insertedId,
+                createdUsers[2].insertedId,
+            ],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        },
+    ];
 
-    const appointmentDto = {
-        end: new Date('2023-02-01T11:00:00'),
-        start: new Date('2023-02-01T10:00:00'),
-        subject: 'Test',
-        location: 'Secrétariat',
-        participants: [createdUser.insertedId],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    };
-
-    await db.collection('appointments').insertOne(appointmentDto);
+    await db.collection('appointments').insertMany(appointmentDtos);
 };
 
 seed();
