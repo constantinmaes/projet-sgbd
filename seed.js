@@ -2,6 +2,7 @@
 require('dotenv').config();
 
 const dbClient = require('./utils/db-client.util');
+const validators = require('./validators');
 
 const seed = async () => {
     const db = await dbClient.db(process.env.MONGO_DB_DATABASE);
@@ -17,7 +18,7 @@ const seed = async () => {
             if (names.includes(c)) {
                 await db.dropCollection(c);
             }
-            await db.createCollection(c);
+            await db.createCollection(c, validators[c] ?? null);
         } catch (e) {
             console.error(c, e);
         }
@@ -86,7 +87,6 @@ const seed = async () => {
     const createdUsers = await Promise.all(
         userDtos.map((u) => db.collection('users').insertOne(u))
     );
-
     const appointmentDtos = [
         {
             end: new Date('2023-02-01T11:00:00'),
