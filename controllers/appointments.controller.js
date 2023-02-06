@@ -24,6 +24,8 @@ exports.findAll = async (req, res) => {
             },
         },
     ]);
+
+    return res.status(200).json(data);
 };
 exports.findOne = async (req, res) => {};
 exports.create = async (req, res) => {
@@ -41,6 +43,17 @@ exports.create = async (req, res) => {
         location: Joi.string().required(),
         participants: Joi.array().items(Joi.string()).min(2),
     });
+
+    if (error) {
+        return res.status(400).json({ message: error });
+    }
+
+    const data = await collection.insertOne(value).catch((err) => {
+        return { error: 'Impossible to save this record !' };
+    });
+
+    res.status(201).json(data);
 };
+
 exports.updateOne = async (req, res) => {};
 exports.deleteOne = async (req, res) => {};
