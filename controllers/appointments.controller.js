@@ -1,4 +1,5 @@
 const Joi = require('joi');
+const { ObjectId } = require('mongodb');
 
 const dbClient = require('../utils/').dbClient;
 const database = dbClient.db(process.env.MONGO_DB_DATABASE);
@@ -30,7 +31,10 @@ exports.findAll = async (req, res) => {
     return res.status(200).json(data);
 };
 exports.findOne = async (req, res) => {};
+
 exports.create = async (req, res) => {
+    const { body } = req;
+
     // end: date+h + futur + requis + postérieure à start
     // start: date+h + futur + requis
     // subject: string + max 150 + requis
@@ -46,13 +50,21 @@ exports.create = async (req, res) => {
         participants: Joi.array().items(Joi.string()).min(2),
     });
 
+    const { value, error } = schema.validate(body);
+
     if (error) {
         return res.status(400).json({ message: error });
     }
 
-    const data = await collection.insertOne(value).catch((err) => {
-        return { error: 'Impossible to save this record !' };
-    });
+    const data = await collection
+        .insertOne({
+            ...value,
+            participants: value.participants.map((el) => new ObjectId(el)),
+        })
+        .catch((err) => {
+            console.error(err);
+            return { error: 'Impossible to save this record !' };
+        });
 
     res.status(201).json(data);
 };
