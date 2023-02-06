@@ -69,5 +69,47 @@ exports.create = async (req, res) => {
     res.status(201).json(data);
 };
 
-exports.updateOne = async (req, res) => {};
+exports.updateOne = async (req, res) => {
+    const { id } = req.params;
+    const { body } = req;
+
+    const schema = Joi.object({
+        start: Joi.date().min('now'),
+        end: Joi.date().greater(Joi.ref('start')),
+        subject: Joi.string().max(150),
+        description: Joi.string().max(1500),
+        location: Joi.string(),
+        participants: Joi.array().items(Joi.string()).min(2),
+    });
+
+    const { value, error } = schema.validate(body);
+
+    if (error) {
+        return res.status(400).json({ message: error });
+    }
+
+    let updateDoc;
+
+    if (!value.participants) {
+        delete value.participants;
+        updateDoc = { ...value };
+    } else {
+        updateDoc = {
+            ...value,
+            participants: value.participants.map((el) => new ObjectId(el)),
+        };
+    }
+
+    const data = await collection.findOneAndUpdate(
+        { _id: new ObjectId(id) },
+        {
+            $set: updateDoc,
+        },
+        {
+            returnDocument: 'after',
+        }
+    );
+
+    res.status(200).json(data.value);
+};
 exports.deleteOne = async (req, res) => {};
