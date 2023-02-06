@@ -45,6 +45,8 @@ exports.create = async (req, res) => {
     const data = await collection.insertOne({
         password: hash,
         ...rest,
+    }).catch(err => {
+        return {error: 'Impossible to save this record !'};
     });
 
     res.status(201).json(data);
