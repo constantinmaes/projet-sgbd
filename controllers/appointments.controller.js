@@ -59,6 +59,9 @@ exports.create = async (req, res) => {
 };
 
 exports.updateOne = async (req, res) => {
+    // rdv origine : participants: [a, b]
+    // req.body { participants: [a, b, c]}
+
     const { id } = req.params;
 
     if (!id) {
@@ -109,3 +112,50 @@ exports.updateOne = async (req, res) => {
     res.status(200).json(data);
 };
 exports.deleteOne = async (req, res) => {};
+
+exports.findParticipants = async (req, res) => {
+    const { id } = req.params;
+
+    // gestion des erreurs à développer
+
+    const data = await collection
+        .aggregate([
+            { $match: { _id: new ObjectId(id) } },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'participants',
+                    foreignField: '_id',
+                    as: 'populatedParticipants',
+                },
+            },
+            {
+                $project: {
+                    participants: '$populatedParticipants',
+                },
+            },
+        ])
+        .toArray();
+
+    if (data.length === 0) {
+        res.status(404).json({ message: 'No appointment found' });
+    } else {
+        res.status(200).json(data[0].participants);
+    }
+};
+
+exports.addParticipant = async (req, res) => {
+    const { id } = req.params;
+
+    const { body } = req;
+
+    // gestion erreurs à développer
+
+    const data = await collection.findOneAndUpdate(
+        { _id: new ObjectId(id) },
+        { $push: { participants: new ObjectId(body.participantId) } },
+        { returnDocument: 'after' }
+    );
+
+    res.status(201).json({ message: 'Particpant added' });
+};
