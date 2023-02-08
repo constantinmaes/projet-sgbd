@@ -115,6 +115,8 @@ const seed = async () => {
     ];
 
     await db.collection('appointments').insertMany(appointmentDtos);
+
+    process.exit(0);
 };
 
 seed();
