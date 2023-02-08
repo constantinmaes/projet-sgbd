@@ -153,7 +153,7 @@ exports.addParticipant = async (req, res) => {
 
     const data = await collection.findOneAndUpdate(
         { _id: new ObjectId(id) },
-        { $push: { participants: new ObjectId(body.participantId) } },
+        { $addToSet: { participants: new ObjectId(body.participantId) } },
         { returnDocument: 'after' }
     );
 
