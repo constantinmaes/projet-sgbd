@@ -159,3 +159,27 @@ exports.addParticipant = async (req, res) => {
 
     res.status(201).json({ message: 'Particpant added' });
 };
+
+exports.removeParticipant = async (req, res) => {
+    const { id, participantId } = req.params;
+
+    // Gestion des erreurs à développer
+
+    const data = await collection.findOneAndUpdate(
+        { _id: new ObjectId(id) },
+        {
+            $pull: {
+                participants: { $in: [new ObjectId(participantId)] },
+            },
+        },
+        { returnDocument: 'after' }
+    );
+};
+
+/**
+$pull: {
+    participants: {
+            $in: [remove_id];
+    }
+}
+*/
